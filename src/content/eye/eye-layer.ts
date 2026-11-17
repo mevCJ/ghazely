@@ -10,24 +10,17 @@ export type EyeLayer = {
 };
 
 /**
- * Where the eye sits per stage. The canvas is laid out once; only transform and opacity
- * change, so a stage change is a slow slide, not a jump.
- * `s` is the scale against the lock size. The lock eye spans about 90% of the screen width.
+ * The eye sits in one place at every stage: large, in the upper middle of the screen, with
+ * the lock panel below it. The whole overlay blinks on and off (see `blink.ts`), so the eye
+ * itself only needs a fixed strength per stage. The lock size spans about 90% of the screen width.
  */
-const PLACE: Record<EyeMode, { x: string; y: string; s: number; opacity: number }> = {
-  // Corner, partly off screen.
-  none: { x: '94vw', y: '96vh', s: 0.2, opacity: 0 },
-  peek: { x: '93vw', y: '95vh', s: 0.22, opacity: 0.85 },
-  // Center bottom, in the dark. The tunnel layer already darkens the edges.
-  watch: { x: '50vw', y: '80vh', s: 0.4, opacity: 0.85 },
-  // Large, in the upper part. The lock panel sits below it.
-  full: { x: '50vw', y: '38vh', s: 1, opacity: 1 },
-};
+const POS = { x: '50vw', y: '40vh' };
+/** Before the lock the eye stays a little see-through so the page can still be read. */
+const OPACITY: Record<EyeMode, number> = { none: 0, peek: 0.7, watch: 0.7, full: 1 };
 
 /** A dark backing so the page does not show through the soft edge of the lock eye. */
 const SCRIM: Record<EyeMode, number> = { none: 0, peek: 0, watch: 0, full: 1 };
 
-const SLIDE_MS = 2200;
 const FADE_MS = 1600;
 
 /** No cursor yet: the eye stares straight ahead. */
@@ -48,12 +41,9 @@ export const createEyeLayer = (): EyeLayer => {
 
   const place = (m: EyeMode): void => {
     if (!canvas || !scrim) return;
-    const p = PLACE[m];
-    const slow = reducedMotion();
-    // Reduced motion: no sliding. The eye fades in place.
-    canvas.style.transition = slow ? `opacity ${FADE_MS}ms ease` : `transform ${SLIDE_MS}ms ease-in-out, opacity ${FADE_MS}ms ease`;
-    canvas.style.transform = `translate(calc(${p.x} - 50%), calc(${p.y} - 50%)) scale(${p.s})`;
-    canvas.style.opacity = String(p.opacity);
+    canvas.style.transition = `opacity ${FADE_MS}ms ease`;
+    canvas.style.transform = `translate(calc(${POS.x} - 50%), calc(${POS.y} - 50%))`;
+    canvas.style.opacity = String(OPACITY[m]);
     scrim.style.opacity = String(SCRIM[m]);
   };
 

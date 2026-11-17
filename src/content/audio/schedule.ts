@@ -20,3 +20,10 @@ export const whisperGapSec = (level: WhisperLevel): readonly [number, number] | 
 
 /** Peak gain of one whisper burst, before the master volume. */
 export const whisperPeak = (level: WhisperLevel): number => (level === 'faint' ? 0.35 : level === 'on' ? 0.6 : 0);
+
+/** Peak level a bundled clip is scaled to, so a quiet or loud file ends up at the same loudness. */
+const SAMPLE_TARGET_PEAK = 0.9;
+
+/** Gain that brings a clip whose loudest sample is `maxAbs` to the target peak. Silent clips stay silent. */
+export const normalizeGain = (maxAbs: number): number =>
+  maxAbs > 0.0001 ? SAMPLE_TARGET_PEAK / maxAbs : 0;

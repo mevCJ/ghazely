@@ -13,9 +13,11 @@ The longer you sit, the worse the page looks. Stages come from continuous screen
 | calm | 0 | Nothing |
 | strain | 20 | Nothing visible yet |
 | dry | 45 | Veins at the edges, heavy eyelids, faint whispers |
-| haze | 75 | Blur starts and grows, floaters, a dark vignette, an eye peeks from a corner |
-| tunnel | 105 | Heartbeat, the eye watches from the dark |
+| haze | 75 | Blur starts and grows, floaters, a dark vignette, a half-shut eye in the middle of the screen |
+| tunnel | 105 | Heartbeat, the eye opens wider |
 | lock | 120 | A full-screen eye and a soft lock panel |
+
+The effects do not fade in. The whole overlay blinks on and off every 10 seconds. It is on for 15% of each cycle at first, and that share grows until it stays on at the lock. All tabs blink together.
 
 The values are in `.kiro/steering/scare-script.md` and mirrored in `src/shared/scare-script.ts`. A test fails if they drift apart.
 
@@ -66,6 +68,7 @@ Open them from the popup or from the lock panel. They are saved as you type.
 | `idle` | Detects that you have stopped using the computer, which is how a rest is found. |
 | `alarms` | Wakes the background worker for the midnight snooze reset, the pause timer, the demo end, and a re-check while a tab is playing sound. |
 | `tabs` | Used for one thing: asking whether any tab is playing sound. A rest does not count while one is. Ghazely never reads tab URLs or titles. |
+| `web_accessible_resources` (not a permission) | Lets the content script load the bundled whisper clip `sfx/whisper.mp3`. It uses a per-session address, so a page cannot probe for the extension by requesting the file. |
 | Content script on all sites | Draws the overlay on every page. It runs in the page only to draw, and skips hosts on the skip list. |
 
 ## Privacy
@@ -74,7 +77,7 @@ Open them from the popup or from the lock panel. They are saved as you type.
 - What is stored: the clock (elapsed time, speed, status, today's snooze count) and your settings. The skip list holds host patterns you typed or the defaults.
 - The page's host name is compared with the skip list on your device and is not saved.
 - While the lock panel is up, the page notes only the time of the last input, to run the rest countdown. It does not record what the input was.
-- There are no network calls and no remote code. Sounds are generated in the browser. Nothing is taken from the page.
+- There are no network calls and no remote code. The heartbeat and ring are generated in the browser. Whispers play a clip bundled with the extension (`public/sfx/whisper.mp3`), with a generated whisper as a fallback. Nothing is taken from the page.
 - Distorting page `<video>` and `<audio>` is off by default. It changes the playback speed and a CSS filter on the element. It does not capture audio.
 
 ## Safety rules the code follows

@@ -1,5 +1,5 @@
 import type { Frame } from '../../shared/types';
-import { heartbeatBpm, whisperGapSec, whisperPeak } from './schedule';
+import { heartbeatBpm, normalizeGain, whisperGapSec, whisperPeak } from './schedule';
 
 export type AudioDirector = {
   mount: (root: ShadowRoot) => void;
@@ -15,8 +15,11 @@ export type AudioDirector = {
 const MASTER = 0.22;
 const LOOKAHEAD = 0.25;
 const RING_GAIN = 0.012;
-/** Scales a whisper's peak. Noise bursts are quiet by nature, so this is higher than the heartbeat's. */
+/** Scales a synthesized whisper's peak. Noise bursts are quiet by nature. Used only if the clip cannot load. */
 const WHISPER_GAIN = 0.4;
+/** Bundled with the extension. Never taken from the page. */
+const WHISPER_FILE = 'sfx/whisper.mp3';
+const CLIP_FADE = 0.2;
 const between = ([a, b]: readonly [number, number]): number => a + Math.random() * (b - a);
 
 /**
@@ -29,6 +32,8 @@ export const createAudioDirector = (): AudioDirector => {
   let master: GainNode | undefined;
   let ringGain: GainNode | undefined;
   let noise: AudioBuffer | undefined;
+  /** The decoded clip. Stays undefined if loading fails, and the noise whisper plays instead. */
+  let clip: { buffer: AudioBuffer; scale: number } | undefined;
   let button: HTMLButtonElement | undefined;
   let muted = false;
   let enabled = true;
@@ -43,6 +48,22 @@ export const createAudioDirector = (): AudioDirector => {
     button.setAttribute('aria-pressed', String(Boolean(ctx) && !muted));
   };
 
+  const loadClip = async (context: AudioContext): Promise<void> => {
+    try {
+      const res = await fetch(chrome.runtime.getURL(WHISPER_FILE));
+      if (!res.ok) return;
+      const buffer = await context.decodeAudioData(await res.arrayBuffer());
+      let max = 0;
+      for (let c = 0; c < buffer.numberOfChannels; c++) {
+        for (const v of buffer.getChannelData(c)) max = Math.max(max, Math.abs(v));
+      }
+      const scale = normalizeGain(max);
+      // A closed context or a silent file keeps the noise whisper.
+      if (ctx === context && scale > 0) clip = { buffer, scale };
+    } catch {
+      // Missing file, blocked by the page, or undecodable: the synthesized whisper stays.
+    }
+  };
   const start = (): void => {
     if (ctx) return;
     try {
@@ -68,6 +89,7 @@ export const createAudioDirector = (): AudioDirector => {
 
     nextBeat = ctx.currentTime + 0.3;
     nextWhisper = ctx.currentTime + 3;
+    void loadClip(ctx);
     label();
   };
 
@@ -85,6 +107,25 @@ export const createAudioDirector = (): AudioDirector => {
     osc.stop(at + 0.25);
   };
 
+  /** Plays the bundled clip and returns how long it lasts, or 0 if it is not loaded. */
+  const playClip = (at: number, peak: number): number => {
+    if (!ctx || !master || !clip) return 0;
+    const src = ctx.createBufferSource();
+    src.buffer = clip.buffer;
+    const g = ctx.createGain();
+    const dur = clip.buffer.duration;
+    const level = peak * clip.scale;
+    // Short fades hide clicks at the cut points.
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(level, at + CLIP_FADE);
+    g.gain.setValueAtTime(level, Math.max(at + CLIP_FADE, at + dur - CLIP_FADE));
+    g.gain.linearRampToValueAtTime(0.0001, at + dur);
+    const pan = ctx.createStereoPanner();
+    pan.pan.value = (Math.random() * 2 - 1) * 0.7;
+    src.connect(g).connect(pan).connect(master);
+    src.start(at);
+    return dur;
+  };
   const whisper = (at: number, peak: number): void => {
     if (!ctx || !master || !noise) return;
     const src = ctx.createBufferSource();
@@ -151,8 +192,11 @@ export const createAudioDirector = (): AudioDirector => {
       }
       const gap = whisperGapSec(frame.whisper);
       if (gap && now >= nextWhisper) {
-        whisper(now + 0.05, whisperPeak(frame.whisper));
-        nextWhisper = now + between(gap);
+        const peak = whisperPeak(frame.whisper);
+        // The gap counts from the end of the clip, so two whispers never overlap.
+        const played = playClip(now + 0.05, peak);
+        if (!played) whisper(now + 0.05, peak);
+        nextWhisper = now + played + between(gap);
       }
     },
     setActive: (next) => {
@@ -171,6 +215,7 @@ export const createAudioDirector = (): AudioDirector => {
       void ctx?.close();
       ctx = master = ringGain = undefined;
       noise = undefined;
+      clip = undefined;
     },
   };
 };

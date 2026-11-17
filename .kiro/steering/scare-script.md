@@ -21,6 +21,10 @@ Times are minutes of continuous screen time at normal speed. Intensity values go
 
 Between two stages, ease each value linearly so the page never jumps.
 
+The eye is one large eye in the middle of the screen at every stage where the eye column is not `none`. It does not move. The eye column (`peek`, `watch`, `full`) sets only how open the eye is and how small the pupil is.
+
+The whole overlay blinks instead of fading in. The cycle is 10 real seconds. At the first effect (`dry`, minute 45) the overlay is on for 15% of each cycle. That share rises in a straight line to 100% at `lock`, where it stays on. Each snooze today adds 0.1 to the share. The cycle follows the wall clock, so every tab blinks together. With `prefers-reduced-motion`, the overlay fades over about a second instead of snapping.
+
 Blur starts at `haze`: it is 0 until minute 75, then rises toward `tunnel`.
 
 Blur is capped: at stage `tunnel` or earlier, text must stay barely readable. Only `lock` may exceed 0.7.

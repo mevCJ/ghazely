@@ -21,6 +21,8 @@ export type Overlay = {
   host: HTMLElement;
   /** Fades the whole overlay. Used for rest and pause. */
   setVisible: (visible: boolean) => void;
+  /** The on and off blink. `ms` is how long the change takes. */
+  setBlink: (on: boolean, ms: number) => void;
   destroy: () => void;
 };
 
@@ -48,6 +50,12 @@ export const createOverlay = (): Overlay => {
   sheet.replaceSync(CSS);
   root.adoptedStyleSheets = [sheet];
 
+  let visible = true;
+  let blinkOn = true;
+  const show = (ms: number): void => {
+    host.style.transition = `opacity ${ms}ms linear`;
+    host.style.opacity = visible && blinkOn ? '1' : '0';
+  };
   const attach = (): void => {
     const parent = parentFor();
     if (host.parentElement !== parent) parent.append(host);
@@ -58,8 +66,15 @@ export const createOverlay = (): Overlay => {
   return {
     root,
     host,
-    setVisible: (visible) => {
-      host.style.opacity = visible ? '1' : '0';
+    setVisible: (next) => {
+      visible = next;
+      // A rest always clears in half a second, whatever the blink was doing.
+      show(FADE_MS);
+    },
+    setBlink: (on, ms) => {
+      if (on === blinkOn) return;
+      blinkOn = on;
+      show(ms);
     },
     destroy: () => {
       document.removeEventListener('fullscreenchange', attach);

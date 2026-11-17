@@ -24,9 +24,9 @@ Layers on one canvas, back to front:
 
 | Stage | Eye | Size | Openness |
 |---|---|---|---|
-| `haze` | Corner, partly hidden | 15% of width | 0.3 |
-| `tunnel` | Center bottom, in the dark | 35% | 0.6 |
-| `lock` | Full screen | 90% | 1.0, with slow blinks |
+| `haze` | Center | 90% | 0.3 |
+| `tunnel` | Center | 90% | 0.6 |
+| `lock` | Center, full strength | 90% | 1.0, with slow blinks |
 
 ## Lock panel
 

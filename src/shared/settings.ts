@@ -7,7 +7,6 @@ export type Settings = {
   skipList: string[];
   sound: boolean;
   mediaDistortion: boolean;
-  videoEye: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -17,7 +16,6 @@ export const DEFAULT_SETTINGS: Settings = {
   skipList: [...DEFAULT_SKIP_LIST],
   sound: true,
   mediaDistortion: false,
-  videoEye: false,
 };
 
 /** Chrome's idle API refuses anything under 15 seconds. */
@@ -59,7 +57,6 @@ export const validateSettings = (raw: unknown): Settings => {
     skipList: skipList(r['skipList'], [...d.skipList]),
     sound: flag(r['sound'], d.sound),
     mediaDistortion: flag(r['mediaDistortion'], d.mediaDistortion),
-    videoEye: flag(r['videoEye'], d.videoEye),
   };
 };
 
