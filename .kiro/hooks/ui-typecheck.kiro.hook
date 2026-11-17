@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Typecheck the options page and popup on save",
+  "description": "Runs typecheck when a file in src/options/ or src/popup/ is saved.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["src/options/**/*", "src/popup/**/*"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Run `npm run typecheck` and report only failures."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Test effects on save",
+  "description": "Runs the effect unit tests when a file in src/content/effects/ is saved.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["src/content/effects/**/*.ts"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Run `npx vitest run tests/effects.test.ts` and report only failures."
+  }
+}

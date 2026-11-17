@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Check shared modules on save",
+  "description": "Runs typecheck and unit tests when a file in src/shared/ is saved.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["src/shared/**/*.ts"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Run `npm run typecheck && npm test` and report only failures."
+  }
+}

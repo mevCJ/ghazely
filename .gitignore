@@ -1,0 +1,9 @@
+node_modules
+dist
+*.log
+.DS_Store
+src/content/eye/prototype.js
+.shots
+# Holds the ElevenLabs API key.
+.kiro/settings/mcp.json
+video/

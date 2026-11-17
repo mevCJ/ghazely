@@ -1,0 +1,18 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Eye prototype</title>
+<style>
+  body { margin: 0; background: #0b0b0b; color: #8a8a8a; font: 13px system-ui, sans-serif; }
+  #stage { width: min(96vw, 1500px); margin: 0 auto; }
+  form { display: flex; gap: 18px; padding: 8px 16px; flex-wrap: wrap; align-items: center; }
+  input[type=range] { width: 130px; }
+</style>
+<div id="stage"></div>
+<form onsubmit="return false">
+  <label>Open <input id="open" type="range" min="0" max="1" step="0.01" value="1"></label>
+  <label>Veins <input id="veins" type="range" min="0" max="1" step="0.01" value="0.5"></label>
+  <label>Pupil <input id="pupil" type="range" min="0.15" max="0.5" step="0.01" value="0.34"></label>
+  <label><input id="auto" type="checkbox" checked> Blink</label>
+  <span id="ms"></span>
+</form>
+<script src="./prototype.js"></script>

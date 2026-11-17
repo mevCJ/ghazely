@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Ghazely</title>
+  <link rel="stylesheet" href="../shared/ui.css" />
+  <style>body { width: 280px; padding: 14px; } dl { margin: 10px 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; } dt { color: #8a8a8a; } dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; } .row button { flex: 1 1 45%; } .foot { margin-top: 10px; }</style>
+</head>
+<body>
+  <h1>Ghazely <span id="badge" class="badge" hidden></span></h1>
+  <dl aria-live="polite">
+    <dt>Stage</dt><dd id="stage">-</dd>
+    <dt>Minutes sat</dt><dd id="minutes">-</dd>
+    <dt>Snoozes left today</dt><dd id="snoozes">-</dd>
+  </dl>
+  <div class="row">
+    <button id="pause" type="button">Pause 1 hour</button>
+    <button id="resume" type="button">Resume</button>
+    <button id="reset" type="button">Reset clock</button>
+    <button id="demo" type="button">Demo mode</button>
+  </div>
+  <p class="foot"><button id="options" type="button" class="link">Settings</button></p>
+  <script type="module" src="./popup.ts"></script>
+</body>
+</html>

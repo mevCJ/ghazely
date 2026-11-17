@@ -1,0 +1,33 @@
+/* Palette from the scare script: shade #1a1a1a, fog #8a8a8a, veins #7a1f1f, drip #b02a2a. */
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: #1a1a1a; color: #e8e2d8;
+  font: 14px/1.45 system-ui, sans-serif;
+}
+h1 { font-size: 20px; margin: 0 0 4px; }
+h2 { font-size: 15px; margin: 22px 0 8px; color: #e8e2d8; }
+p, .hint { color: #8a8a8a; margin: 4px 0; }
+label { display: block; margin: 10px 0 2px; }
+input[type="number"], input[type="text"] {
+  font: inherit; color: #e8e2d8; background: #111; border: 1px solid #7a1f1f;
+  border-radius: 4px; padding: 6px 8px; width: 140px;
+}
+input[type="text"] { width: 240px; }
+.check { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+button {
+  font: inherit; color: #e8e2d8; background: #1a1a1a; border: 1px solid #7a1f1f;
+  border-radius: 4px; padding: 6px 12px; cursor: pointer;
+}
+button:hover { background: #2a1818; }
+input:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible {
+  outline: 2px solid #b02a2a; outline-offset: 2px;
+}
+button.link { border-color: transparent; color: #8a8a8a; text-decoration: underline; padding: 6px 4px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  background: #7a1f1f; color: #e8e2d8; font-weight: 600; font-size: 12px;
+}
+.badge[hidden] { display: none; }
+.sr { position: absolute; left: -9999px; }
