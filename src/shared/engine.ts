@@ -30,6 +30,7 @@ const mix = (a: Intensities, b: Intensities, t: number): Intensities => ({
   eyelids: lerp(a.eyelids, b.eyelids, t),
   floaters: lerp(a.floaters, b.floaters, t),
   tunnel: lerp(a.tunnel, b.tunnel, t),
+  tint: lerp(a.tint, b.tint, t),
 });
 
 /** Snooze penalty added to every effect that is already active. */
@@ -57,6 +58,7 @@ export const intensitiesAt = (elapsedMin: number, penalty = 0): Intensities => {
     eyelids: lift(base.eyelids),
     floaters: lift(base.floaters),
     tunnel: lift(base.tunnel),
+    tint: lift(base.tint),
   };
   if (!from.lock) out.blur = Math.min(out.blur, BLUR_CAP_BEFORE_LOCK);
   return out;

@@ -5,6 +5,7 @@ import { startController } from './controller';
 import { blurEffect } from './effects/blur';
 import { eyelidsEffect } from './effects/eyelids';
 import { floatersEffect } from './effects/floaters';
+import { redImagesEffect } from './effects/red-images';
 import { tunnelEffect } from './effects/tunnel';
 import { veinsEffect } from './effects/veins';
 import { createEyeLayer } from './eye/eye-layer';
@@ -26,13 +27,14 @@ const mount = (settings: Settings): void => {
   const overlay = createOverlay();
   const audio = createAudioDirector();
   const media = mediaDistortEffect();
+  const red = redImagesEffect();
   const lock = createLockPanel({
     settings: lockSettings(settings),
     send: (m) => void chrome.runtime.sendMessage(m).catch(() => undefined),
   });
   const stopController = startController({
     overlay,
-    effects: [blurEffect(), tunnelEffect(), veinsEffect(), floatersEffect(), eyelidsEffect(), media],
+    effects: [blurEffect(), tunnelEffect(), veinsEffect(), floatersEffect(), eyelidsEffect(), red, media],
     audio,
     eye: createEyeLayer(),
     lock,
@@ -40,6 +42,7 @@ const mount = (settings: Settings): void => {
   applyOptions = (s) => {
     audio.setEnabled(s.sound);
     media.setEnabled(s.mediaDistortion);
+    red.setEnabled(s.redImages);
     lock.setSettings(lockSettings(s));
   };
   applyOptions(settings);

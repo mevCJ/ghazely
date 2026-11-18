@@ -10,21 +10,22 @@ Every spec reads this file. If stage times, colors, or wording change, change th
 
 Times are minutes of continuous screen time at normal speed. Intensity values go from 0 to 1.
 
-| id | startMin | blur | veins | eyelids | floaters | tunnel | heartbeat | whisper | eye | lock |
-|---|---|---|---|---|---|---|---|---|---|---|
-| calm | 0 | 0 | 0 | 0 | 0 | 0 | off | off | none | no |
-| strain | 20 | 0 | 0 | 0 | 0 | 0 | off | off | none | no |
-| dry | 45 | 0 | 0.25 | 0.20 | 0 | 0 | off | faint | none | no |
-| haze | 75 | 0 | 0.45 | 0.35 | 0.5 | 0.2 | off | on | peek | no |
-| tunnel | 105 | 0.70 | 0.70 | 0.50 | 0.8 | 0.6 | on | on | watch | no |
-| lock | 120 | 0.85 | 1.00 | 0.70 | 1.0 | 0.9 | on | on | full | yes |
+| id | startMin | blur | veins | eyelids | floaters | tunnel | tint | heartbeat | whisper | eye | lock |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| calm | 0 | 0 | 0 | 0 | 0 | 0 | 0 | off | off | none | no |
+| strain | 20 | 0 | 0 | 0 | 0 | 0 | 0 | off | off | none | no |
+| dry | 45 | 0 | 0.25 | 0.20 | 0 | 0 | 0 | off | faint | none | no |
+| haze | 75 | 0 | 0.45 | 0.35 | 0.5 | 0.2 | 0.40 | off | on | peek | no |
+| tunnel | 105 | 0.70 | 0.70 | 0.50 | 0.8 | 0.6 | 0.70 | on | on | watch | no |
+| lock | 120 | 0.85 | 1.00 | 0.70 | 1.0 | 0.9 | 1.00 | on | on | full | yes |
 
 Between two stages, ease each value linearly so the page never jumps.
 
 The eye is one large eye in the middle of the screen at every stage where the eye column is not `none`. It does not move. The eye column (`peek`, `watch`, `full`) sets only how open the eye is and how small the pupil is.
 
-The whole overlay blinks instead of fading in. The cycle is 10 real seconds. At the first effect (`dry`, minute 45) the overlay is on for 15% of each cycle. That share rises in a straight line to 100% at `lock`, where it stays on. Each snooze today adds 0.1 to the share. The cycle follows the wall clock, so every tab blinks together. With `prefers-reduced-motion`, the overlay fades over about a second instead of snapping.
+The whole overlay flickers and blinks, and it never eases in or out. The cycle is 10 real seconds, and every tab follows the wall clock. In `strain` and `dry` the overlay only flickers: a burst of about 0.4 s at the start of each cycle (on 0-60 ms, 120-170 ms, 250-320 ms), then off. From `haze` the same flicker comes first, then the overlay stays on until the cycle ends. The stay is 15% of the cycle at `haze`, rises in a straight line to 100% at `lock`, and each snooze today adds 0.1. At `lock` it is always on. With `prefers-reduced-motion` there is no flicker: one slow fade-in stretch in `strain` and `dry`, and a plain slow stay from `haze`.
 
+Images and video turn red through the `tint` column. It is 0 until `dry` (minute 45), then rises in a straight line to 1 at `lock`. At 1 an image is a dark, sickly red, not bright red. A setting turns it off (default on). Rest clears it within a second.
 Blur starts at `haze`: it is 0 until minute 75, then rises toward `tunnel`.
 
 Blur is capped: at stage `tunnel` or earlier, text must stay barely readable. Only `lock` may exceed 0.7.

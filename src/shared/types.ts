@@ -10,6 +10,7 @@ export type Intensities = {
   eyelids: number;
   floaters: number;
   tunnel: number;
+  tint: number;
 };
 
 export type Stage = {

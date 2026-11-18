@@ -10,10 +10,10 @@ import { reducedMotion } from './reduced-motion';
 import { FADE_MS, type Overlay } from './overlay-host';
 
 const MS_PER_MIN = 60_000;
-/** How fast the overlay snaps on and off. Reduced motion gets a slow fade instead of a flicker. */
-const BLINK_MS = 120;
+/** The flicker snaps with no easing. Reduced motion gets a slow fade instead of a flicker. */
+const BLINK_MS = 0;
 const BLINK_MS_REDUCED = 900;
-const ZERO: Intensities = { blur: 0, veins: 0, eyelids: 0, floaters: 0, tunnel: 0 };
+const ZERO: Intensities = { blur: 0, veins: 0, eyelids: 0, floaters: 0, tunnel: 0, tint: 0 };
 
 export type ControllerParts = {
   overlay: Overlay;
@@ -47,7 +47,7 @@ export const startController = ({ overlay, effects, audio, eye, lock }: Controll
     const f = frameAt(min, penaltyFor(clock.snoozes.count));
     overlay.host.dataset['stage'] = f.stage;
     overlay.setBlink(
-      overlayBlinkOn(min, Date.now(), clock.snoozes.count),
+      overlayBlinkOn(min, Date.now(), clock.snoozes.count, reducedMotion()),
       reducedMotion() ? BLINK_MS_REDUCED : BLINK_MS,
     );
     effects.forEach((e) => e.update(f.intensities, dt));

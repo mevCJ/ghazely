@@ -170,3 +170,11 @@ describe('snooze', () => {
     expect(dayKey(new Date(2026, 0, 5))).toBe('2026-01-05');
   });
 });
+
+describe('tint', () => {
+  it('stays 0 until dry, then rises to 1 at lock', () => {
+    expect(intensitiesAt(45).tint).toBe(0);
+    expect(intensitiesAt(60).tint).toBeGreaterThan(0);
+    expect(intensitiesAt(120).tint).toBe(1);
+  });
+});

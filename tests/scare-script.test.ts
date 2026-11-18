@@ -17,7 +17,7 @@ describe('scare script matches the steering file', () => {
 
   it.each(STAGES.map((s, i) => [s, rows[i]] as const))('stage %# values match', (stage, row) => {
     expect(row).toBeDefined();
-    const [, start, blur, veins, eyelids, floaters, tunnel, heartbeat, whisper, eye, lock] =
+    const [, start, blur, veins, eyelids, floaters, tunnel, tint, heartbeat, whisper, eye, lock] =
       row as string[];
     expect(stage.startMin).toBe(Number(start));
     expect(stage.levels).toEqual({
@@ -26,6 +26,7 @@ describe('scare script matches the steering file', () => {
       eyelids: Number(eyelids),
       floaters: Number(floaters),
       tunnel: Number(tunnel),
+      tint: Number(tint),
     });
     expect(stage.heartbeat).toBe(heartbeat === 'on');
     expect(stage.whisper).toBe(whisper);

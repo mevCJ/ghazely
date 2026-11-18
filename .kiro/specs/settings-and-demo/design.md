@@ -10,6 +10,7 @@ type Settings = {
   skipList: string[];       // host patterns
   sound: boolean;           // default true
   mediaDistortion: boolean; // default false (bonus)
+  redImages: boolean;       // default true
 };
 ```
 

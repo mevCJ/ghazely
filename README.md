@@ -17,7 +17,7 @@ The longer you sit, the worse the page looks. Stages come from continuous screen
 | tunnel | 105 | Heartbeat, the eye opens wider |
 | lock | 120 | A full-screen eye and a soft lock panel |
 
-The effects do not fade in. The whole overlay blinks on and off every 10 seconds. It is on for 15% of each cycle at first, and that share grows until it stays on at the lock. All tabs blink together.
+The effects do not fade in. Every 10 seconds the whole overlay flickers for about 0.4 s. In strain and dry that is all it does. From haze it then stays on until the cycle ends. The stay is 15% of the cycle at first and grows until it is always on at the lock. All tabs flicker together.
 
 The values are in `.kiro/steering/scare-script.md` and mirrored in `src/shared/scare-script.ts`. A test fails if they drift apart.
 
@@ -57,7 +57,7 @@ npm test
 Open them from the popup or from the lock panel. They are saved as you type.
 
 - Rest length (at least 15 seconds), snoozes per day, snooze length.
-- Sound and media distortion switches.
+- Sound, red images and media distortion switches.
 - The skip list: hosts Ghazely never touches. `*` is a wildcard. The defaults cover video calls, payment, and banking. Changes reach a page that is already open after it reloads.
 
 ## Permissions

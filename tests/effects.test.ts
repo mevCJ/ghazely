@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { lidCover } from '../src/content/effects/eyelids';
 import { visibleFloaters } from '../src/content/effects/floaters';
+import { tintFilter } from '../src/content/effects/red-images';
 import { tunnelOpacity, tunnelScale } from '../src/content/effects/tunnel';
 import { buildVeins, mulberry32, veinOpacity, veinScale } from '../src/content/effects/veins';
 
@@ -55,5 +56,20 @@ describe('floaters', () => {
     expect(visibleFloaters(0)).toBe(0);
     expect(visibleFloaters(1)).toBe(9);
     expect(visibleFloaters(0.5)).toBeGreaterThan(visibleFloaters(0.2));
+  });
+});
+
+describe('red images', () => {
+  it('adds no filter at 0', () => {
+    expect(tintFilter(0)).toBe('');
+  });
+  it('goes dark red at full strength, not bright', () => {
+    const f = tintFilter(1);
+    expect(f).toContain('sepia(1)');
+    expect(f).toContain('hue-rotate(-50deg)');
+    expect(f).toContain('brightness(0.70)');
+  });
+  it('grows with the tint', () => {
+    expect(tintFilter(0.5)).toContain('sepia(0.5)');
   });
 });

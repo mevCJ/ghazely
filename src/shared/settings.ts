@@ -7,6 +7,7 @@ export type Settings = {
   skipList: string[];
   sound: boolean;
   mediaDistortion: boolean;
+  redImages: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -16,6 +17,7 @@ export const DEFAULT_SETTINGS: Settings = {
   skipList: [...DEFAULT_SKIP_LIST],
   sound: true,
   mediaDistortion: false,
+  redImages: true,
 };
 
 /** Chrome's idle API refuses anything under 15 seconds. */
@@ -57,6 +59,7 @@ export const validateSettings = (raw: unknown): Settings => {
     skipList: skipList(r['skipList'], [...d.skipList]),
     sound: flag(r['sound'], d.sound),
     mediaDistortion: flag(r['mediaDistortion'], d.mediaDistortion),
+    redImages: flag(r['redImages'], d.redImages),
   };
 };
 

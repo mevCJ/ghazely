@@ -21,6 +21,7 @@ const snoozeLimit = byId<HTMLInputElement>('snoozeLimit');
 const snoozeMinutes = byId<HTMLInputElement>('snoozeMinutes');
 const sound = byId<HTMLInputElement>('sound');
 const mediaDistortion = byId<HTMLInputElement>('mediaDistortion');
+const redImages = byId<HTMLInputElement>('redImages');
 const listEl = byId<HTMLUListElement>('skipList');
 const statusEl = byId<HTMLParagraphElement>('status');
 const newHost = byId<HTMLInputElement>('newHost');
@@ -51,6 +52,7 @@ const fill = (s: Settings): void => {
   snoozeMinutes.value = String(s.snoozeMinutes);
   sound.checked = s.sound;
   mediaDistortion.checked = s.mediaDistortion;
+  redImages.checked = s.redImages;
   listEl.replaceChildren(
     ...s.skipList.map((host) => {
       const li = document.createElement('li');
@@ -78,9 +80,10 @@ const readForm = (): Settings => ({
   snoozeMinutes: Number(snoozeMinutes.value),
   sound: sound.checked,
   mediaDistortion: mediaDistortion.checked,
+  redImages: redImages.checked,
 });
 
-for (const input of [restSeconds, snoozeLimit, snoozeMinutes, sound, mediaDistortion]) {
+for (const input of [restSeconds, snoozeLimit, snoozeMinutes, sound, mediaDistortion, redImages]) {
   input.addEventListener('change', () => void save(readForm()));
 }
 

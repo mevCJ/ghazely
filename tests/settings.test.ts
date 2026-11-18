@@ -19,6 +19,10 @@ describe('validateSettings', () => {
     expect(s.snoozeLimit).toBe(3);
     expect(s.sound).toBe(true);
   });
+  it('turns red images on by default and keeps a stored choice', () => {
+    expect(validateSettings({}).redImages).toBe(true);
+    expect(validateSettings({ redImages: false }).redImages).toBe(false);
+  });
   it('allows zero snoozes', () => {
     expect(validateSettings({ snoozeLimit: 0 }).snoozeLimit).toBe(0);
   });

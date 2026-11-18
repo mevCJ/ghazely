@@ -6,7 +6,7 @@ export const STAGES: readonly Stage[] = [
   {
     id: 'calm',
     startMin: 0,
-    levels: { blur: 0, veins: 0, eyelids: 0, floaters: 0, tunnel: 0 },
+    levels: { blur: 0, veins: 0, eyelids: 0, floaters: 0, tunnel: 0, tint: 0 },
     heartbeat: false,
     whisper: 'off',
     eye: 'none',
@@ -15,7 +15,7 @@ export const STAGES: readonly Stage[] = [
   {
     id: 'strain',
     startMin: 20,
-    levels: { blur: 0, veins: 0, eyelids: 0, floaters: 0, tunnel: 0 },
+    levels: { blur: 0, veins: 0, eyelids: 0, floaters: 0, tunnel: 0, tint: 0 },
     heartbeat: false,
     whisper: 'off',
     eye: 'none',
@@ -24,7 +24,7 @@ export const STAGES: readonly Stage[] = [
   {
     id: 'dry',
     startMin: 45,
-    levels: { blur: 0, veins: 0.25, eyelids: 0.2, floaters: 0, tunnel: 0 },
+    levels: { blur: 0, veins: 0.25, eyelids: 0.2, floaters: 0, tunnel: 0, tint: 0 },
     heartbeat: false,
     whisper: 'faint',
     eye: 'none',
@@ -33,7 +33,7 @@ export const STAGES: readonly Stage[] = [
   {
     id: 'haze',
     startMin: 75,
-    levels: { blur: 0, veins: 0.45, eyelids: 0.35, floaters: 0.5, tunnel: 0.2 },
+    levels: { blur: 0, veins: 0.45, eyelids: 0.35, floaters: 0.5, tunnel: 0.2, tint: 0.4 },
     heartbeat: false,
     whisper: 'on',
     eye: 'peek',
@@ -42,7 +42,7 @@ export const STAGES: readonly Stage[] = [
   {
     id: 'tunnel',
     startMin: 105,
-    levels: { blur: 0.7, veins: 0.7, eyelids: 0.5, floaters: 0.8, tunnel: 0.6 },
+    levels: { blur: 0.7, veins: 0.7, eyelids: 0.5, floaters: 0.8, tunnel: 0.6, tint: 0.7 },
     heartbeat: true,
     whisper: 'on',
     eye: 'watch',
@@ -51,7 +51,7 @@ export const STAGES: readonly Stage[] = [
   {
     id: 'lock',
     startMin: 120,
-    levels: { blur: 0.85, veins: 1, eyelids: 0.7, floaters: 1, tunnel: 0.9 },
+    levels: { blur: 0.85, veins: 1, eyelids: 0.7, floaters: 1, tunnel: 0.9, tint: 1 },
     heartbeat: true,
     whisper: 'on',
     eye: 'full',
