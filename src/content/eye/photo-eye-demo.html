@@ -1,0 +1,17 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Photo eye demo</title>
+<style>
+  body { margin: 0; background: #0b0b0b; color: #8a8a8a; font: 13px system-ui, sans-serif; }
+  #stage { width: min(96vw, 1500px); margin: 0 auto; }
+  form { display: flex; gap: 18px; padding: 8px 16px; flex-wrap: wrap; align-items: center; }
+  input[type=range] { width: 130px; }
+</style>
+<div id="stage"></div>
+<form onsubmit="return false">
+  <label>Open <input id="open" type="range" min="0" max="1" step="0.01" value="1"></label>
+  <label><input id="mute" type="checkbox"> Mute</label>
+  <span>Click the page once to allow sound, then sweep the cursor across the eye.</span>
+  <span id="ms"></span>
+</form>
+<script type="module" src="./photo-eye-demo.ts"></script>
