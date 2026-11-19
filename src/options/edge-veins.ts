@@ -2,7 +2,7 @@ import { buildVeins } from '../content/effects/veins';
 import { PALETTE } from '../shared/scare-script';
 
 /** The whole layer is faint, so the settings stay easy to read. */
-const OPACITY = 0.5;
+const OPACITY = 0.3;
 /** Thinner than the page effect. These are a hint, not a threat. */
 const WIDTH_SCALE = 0.55;
 const DPR_CAP = 1.5;

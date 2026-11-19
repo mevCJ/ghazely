@@ -18,6 +18,8 @@ export type AudioDirector = {
 const MASTER = 0.22;
 const LOOKAHEAD = 0.25;
 const RING_GAIN = 0.012;
+/** Temporarily off: the high-pitched ring at the lock stage. Set to true to bring it back. */
+const RING_ENABLED = false;
 /** Scales a synthesized whisper's peak. Noise bursts are quiet by nature. Used only if the clip cannot load. */
 const WHISPER_GAIN = 0.4;
 /** Bundled with the extension. Never taken from the page. */
@@ -184,7 +186,7 @@ export const createAudioDirector = (): AudioDirector => {
       }
       if (ctx.state === 'suspended') void ctx.resume();
       target(master.gain, MASTER, 0.2);
-      target(ringGain.gain, frame.lock ? RING_GAIN : 0, 1.5);
+      target(ringGain.gain, RING_ENABLED && frame.lock ? RING_GAIN : 0, 1.5);
 
       const now = ctx.currentTime;
       if (frame.heartbeat) {

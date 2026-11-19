@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createGazeJumpDetector } from '../src/content/eye/gaze-jump';
 import { pickClip } from '../src/content/eye/eye-sfx';
+import { createEyeState } from '../src/content/eye/eye-state';
 
 describe('gaze jump detector', () => {
   it('fires on a fast sweep', () => {
@@ -23,6 +24,38 @@ describe('gaze jump detector', () => {
     expect(d.push(-1, 0, 100)).toBe(false);
     d.push(-1, 0, 700);
     expect(d.push(1, 0, 750)).toBe(true);
+  });
+});
+
+describe('gaze jump with reduced motion', () => {
+  const sweep = (reducedMotion: boolean, watch: 'gaze' | 'target'): boolean => {
+    const state = createEyeState(() => 0.5);
+    const d = createGazeJumpDetector();
+    let t = 0;
+    let fired = false;
+    const run = (target: number, ms: number): void => {
+      for (let i = 0; i < ms / 16; i++) {
+        t += 16;
+        const f = state.step(16, { mode: 'full', targetX: target, targetY: 0, reducedMotion, veins: 0 });
+        fired ||= d.push(watch === 'gaze' ? f.gazeX : target, 0, t);
+      }
+    };
+    run(-1, 3000);
+    fired = false;
+    run(1, 1000);
+    return fired;
+  };
+
+  it('fires from the eased gaze at normal speed', () => {
+    expect(sweep(false, 'gaze')).toBe(true);
+  });
+
+  it('never fires from the eased gaze with reduced motion, which is why the cursor is watched', () => {
+    expect(sweep(true, 'gaze')).toBe(false);
+  });
+
+  it('fires from the cursor with reduced motion', () => {
+    expect(sweep(true, 'target')).toBe(true);
   });
 });
 

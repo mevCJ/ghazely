@@ -159,7 +159,11 @@ export const createEyeLayer = (initial: EyeStyle = 'photo', onGazeJump?: () => v
       });
       eye.draw(f);
       clockMs += dtMs;
-      if (mode !== 'none' && jump.push(f.gazeX, f.gazeY, clockMs)) onGazeJump?.();
+      // Watch the cursor, not the eased gaze. With reduced motion the gaze eases over 700 ms, so
+      // it never covers the jump distance inside the detector's window, and the sound never plays.
+      const sx = Math.min(1, Math.max(-1, target.x));
+      const sy = Math.min(1, Math.max(-1, target.y));
+      if (mode !== 'none' && jump.push(sx, sy, clockMs)) onGazeJump?.();
     },
     setStyle,
     unmount: () => {

@@ -16,7 +16,7 @@ export const EYE_SFX_FILES = [
 ] as const;
 
 /** Clip level before the output gain. The director's master volume keeps it low. */
-const LEVEL = 0.6;
+const LEVEL = 0.3;
 
 /** Picks an index that differs from the last one, so the same clip never plays twice in a row. */
 export const pickClip = (count: number, last: number, rand: () => number = Math.random): number => {
