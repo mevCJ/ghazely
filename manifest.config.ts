@@ -31,10 +31,24 @@ export default defineManifest({
       run_at: 'document_idle',
     },
   ],
-  // The content script loads the bundled whisper clip from here. `use_dynamic_url` gives the
+  // The content script loads the bundled whisper clip and the photo eye layers from here. `use_dynamic_url` gives the
   // file a per-session address, so a page cannot probe for the extension by requesting it.
   web_accessible_resources: [
-    { resources: ['sfx/whisper.mp3'], matches: ['<all_urls>'], use_dynamic_url: true },
+    {
+      resources: [
+        'sfx/whisper.mp3',
+        'sfx/eye-fx-1.mp3',
+        'sfx/eye-fx-2.mp3',
+        'sfx/eye-fx-3.mp3',
+        'sfx/eye-fx-4.mp3',
+        'eye/base.png',
+        'eye/eye-closed.png',
+        'eye/pupil.png',
+        'eye/mask.png',
+      ],
+      matches: ['<all_urls>'],
+      use_dynamic_url: true,
+    },
   ],
   // Each one is explained in the README.
   permissions: ['storage', 'idle', 'alarms', 'tabs'],

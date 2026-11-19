@@ -3,12 +3,16 @@ import { DEFAULT_SKIP_LIST } from '../shared/scare-script';
 import { sendToWorker } from '../shared/send';
 import {
   cleanPattern,
+  EYE_STYLES,
   getSettings,
   setSettings,
   validateSettings,
   type Settings,
 } from '../shared/settings';
 import { getClock, subscribeClock } from '../shared/storage';
+import { mountEdgeVeins } from './edge-veins';
+import { createEye } from '../content/eye/eye';
+import { createPhotoEye } from '../content/eye/photo-eye';
 
 const byId = <T extends HTMLElement>(id: string): T => {
   const node = document.getElementById(id);
@@ -19,6 +23,8 @@ const byId = <T extends HTMLElement>(id: string): T => {
 const restSeconds = byId<HTMLInputElement>('restSeconds');
 const snoozeLimit = byId<HTMLInputElement>('snoozeLimit');
 const snoozeMinutes = byId<HTMLInputElement>('snoozeMinutes');
+const eyeRadios = [...document.querySelectorAll<HTMLInputElement>('input[name="eyeStyle"]')];
+const photosensitive = byId<HTMLInputElement>('photosensitive');
 const sound = byId<HTMLInputElement>('sound');
 const mediaDistortion = byId<HTMLInputElement>('mediaDistortion');
 const redImages = byId<HTMLInputElement>('redImages');
@@ -50,6 +56,8 @@ const fill = (s: Settings): void => {
   restSeconds.value = String(s.restSeconds);
   snoozeLimit.value = String(s.snoozeLimit);
   snoozeMinutes.value = String(s.snoozeMinutes);
+  for (const radio of eyeRadios) radio.checked = radio.value === s.eyeStyle;
+  photosensitive.checked = s.photosensitive;
   sound.checked = s.sound;
   mediaDistortion.checked = s.mediaDistortion;
   redImages.checked = s.redImages;
@@ -78,12 +86,14 @@ const readForm = (): Settings => ({
   restSeconds: Number(restSeconds.value),
   snoozeLimit: Number(snoozeLimit.value),
   snoozeMinutes: Number(snoozeMinutes.value),
+  eyeStyle: EYE_STYLES.find((style) => style === eyeRadios.find((r) => r.checked)?.value) ?? current.eyeStyle,
+  photosensitive: photosensitive.checked,
   sound: sound.checked,
   mediaDistortion: mediaDistortion.checked,
   redImages: redImages.checked,
 });
 
-for (const input of [restSeconds, snoozeLimit, snoozeMinutes, sound, mediaDistortion, redImages]) {
+for (const input of [restSeconds, snoozeLimit, snoozeMinutes, ...eyeRadios, photosensitive, sound, mediaDistortion, redImages]) {
   input.addEventListener('change', () => void save(readForm()));
 }
 
@@ -147,3 +157,38 @@ void getSettings().then((s) => {
   current = s;
   fill(s);
 });
+
+// Previews are the real eyes, drawn once, so they cannot drift from what a page shows.
+const STILL = { openness: 1, gazeX: 0, gazeY: 0, pupil: 0.3, veins: 0.3 };
+const showPreview = (id: string, canvas: HTMLCanvasElement): void => byId(id).replaceChildren(canvas);
+try {
+  const drawn = createEye();
+  drawn.draw(STILL);
+  showPreview('preview-drawn', drawn.canvas);
+} catch {
+  // A missing preview is harmless. The label still says which eye it is.
+}
+createPhotoEye({
+  base: chrome.runtime.getURL('eye/base.png'),
+  closed: chrome.runtime.getURL('eye/eye-closed.png'),
+  pupil: chrome.runtime.getURL('eye/pupil.png'),
+  mask: chrome.runtime.getURL('eye/mask.png'),
+})
+  .then((photo) => {
+    photo.draw(STILL);
+    showPreview('preview-photo', photo.canvas);
+  })
+  .catch(() => undefined);
+
+// Escape closes an open tooltip without moving focus. Hovering or focusing the icon again reopens it.
+const tips = [...document.querySelectorAll<HTMLElement>('.tip')];
+for (const tip of tips) {
+  const reopen = (): void => tip.classList.remove('dismissed');
+  tip.addEventListener('mouseenter', reopen);
+  tip.addEventListener('focusin', reopen);
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') for (const tip of tips) tip.classList.add('dismissed');
+});
+
+mountEdgeVeins();

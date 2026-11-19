@@ -1,4 +1,5 @@
 import type { Frame } from '../../shared/types';
+import { createEyeFxPlayer, EYE_SFX_FILES, type EyeFxPlayer } from '../eye/eye-sfx';
 import { heartbeatBpm, normalizeGain, whisperGapSec, whisperPeak } from './schedule';
 
 export type AudioDirector = {
@@ -8,6 +9,8 @@ export type AudioDirector = {
   setActive: (active: boolean) => void;
   /** The user's sound setting. */
   setEnabled: (enabled: boolean) => void;
+  /** Plays one eye clip if sound is on, unmuted and not already playing one. Returns true if it started. */
+  playEyeFx: () => boolean;
   unmount: () => void;
 };
 
@@ -34,6 +37,7 @@ export const createAudioDirector = (): AudioDirector => {
   let noise: AudioBuffer | undefined;
   /** The decoded clip. Stays undefined if loading fails, and the noise whisper plays instead. */
   let clip: { buffer: AudioBuffer; scale: number } | undefined;
+  let fx: EyeFxPlayer | undefined;
   let button: HTMLButtonElement | undefined;
   let muted = false;
   let enabled = true;
@@ -90,6 +94,7 @@ export const createAudioDirector = (): AudioDirector => {
     nextBeat = ctx.currentTime + 0.3;
     nextWhisper = ctx.currentTime + 3;
     void loadClip(ctx);
+    fx = createEyeFxPlayer(ctx, master, EYE_SFX_FILES.map((f) => chrome.runtime.getURL(f)));
     label();
   };
 
@@ -160,6 +165,7 @@ export const createAudioDirector = (): AudioDirector => {
         // The click is the user gesture that lets the context start.
         if (!ctx) start();
         else muted = !muted;
+        if (muted) fx?.stop();
         void ctx?.resume();
         label();
       });
@@ -199,13 +205,16 @@ export const createAudioDirector = (): AudioDirector => {
         nextWhisper = now + played + between(gap);
       }
     },
+    playEyeFx: () => Boolean(fx) && enabled && active && wanted && !muted && Boolean(fx?.play()),
     setActive: (next) => {
       active = next;
+      if (!next) fx?.stop();
       if (!next && master) target(master.gain, 0, 0.08);
       if (!next && button) button.hidden = true;
     },
     setEnabled: (next) => {
       enabled = next;
+      if (!next) fx?.stop();
       if (!next && master) target(master.gain, 0, 0.08);
       if (!next && button) button.hidden = true;
     },
@@ -213,6 +222,7 @@ export const createAudioDirector = (): AudioDirector => {
       button?.remove();
       button = undefined;
       void ctx?.close();
+      fx = undefined;
       ctx = master = ringGain = undefined;
       noise = undefined;
       clip = undefined;

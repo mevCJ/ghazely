@@ -5,15 +5,16 @@ body {
   margin: 0; background: #1a1a1a; color: #e8e2d8;
   font: 14px/1.45 system-ui, sans-serif;
 }
-h1 { font-size: 20px; margin: 0 0 4px; }
-h2 { font-size: 15px; margin: 22px 0 8px; color: #e8e2d8; }
+h1 { font-size: 28px; margin: 0 0 4px; }
+h2 { font-size: 20px; margin: 52px 0 8px; color: #e8e2d8; }
 p, .hint { color: #8a8a8a; margin: 4px 0; }
-label { display: block; margin: 10px 0 2px; }
+label, legend { display: block; margin: 10px 0 2px; color: #a9a9a9; }
 input[type="number"], input[type="text"] {
   font: inherit; color: #e8e2d8; background: #111; border: 1px solid #7a1f1f;
   border-radius: 4px; padding: 6px 8px; width: 140px;
 }
 input[type="text"] { width: 240px; }
+input[type="checkbox"] { accent-color: #b02a2a; }
 .check { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
 button {
   font: inherit; color: #e8e2d8; background: #1a1a1a; border: 1px solid #7a1f1f;

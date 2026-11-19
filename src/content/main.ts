@@ -12,6 +12,7 @@ import { createEyeLayer } from './eye/eye-layer';
 import { createLockPanel, type LockSettings } from './lock-panel';
 import { mediaDistortEffect } from './media-distort';
 import { createOverlay } from './overlay-host';
+import { setPhotosensitive } from './reduced-motion';
 
 let teardown: (() => void) | undefined;
 let applyOptions: ((s: Settings) => void) | undefined;
@@ -28,6 +29,7 @@ const mount = (settings: Settings): void => {
   const audio = createAudioDirector();
   const media = mediaDistortEffect();
   const red = redImagesEffect();
+  const eye = createEyeLayer(settings.eyeStyle, () => void audio.playEyeFx());
   const lock = createLockPanel({
     settings: lockSettings(settings),
     send: (m) => void chrome.runtime.sendMessage(m).catch(() => undefined),
@@ -36,13 +38,15 @@ const mount = (settings: Settings): void => {
     overlay,
     effects: [blurEffect(), tunnelEffect(), veinsEffect(), floatersEffect(), eyelidsEffect(), red, media],
     audio,
-    eye: createEyeLayer(),
+    eye,
     lock,
   });
   applyOptions = (s) => {
     audio.setEnabled(s.sound);
     media.setEnabled(s.mediaDistortion);
     red.setEnabled(s.redImages);
+    eye.setStyle(s.eyeStyle);
+    setPhotosensitive(s.photosensitive);
     lock.setSettings(lockSettings(s));
   };
   applyOptions(settings);

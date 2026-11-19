@@ -23,6 +23,16 @@ describe('validateSettings', () => {
     expect(validateSettings({}).redImages).toBe(true);
     expect(validateSettings({ redImages: false }).redImages).toBe(false);
   });
+  it('uses the photo eye by default and keeps a valid choice', () => {
+    expect(validateSettings({}).eyeStyle).toBe('photo');
+    expect(validateSettings({ eyeStyle: 'drawn' }).eyeStyle).toBe('drawn');
+    expect(validateSettings({ eyeStyle: 'cartoon' }).eyeStyle).toBe('photo');
+  });
+  it('turns photosensitive mode on by default and keeps a stored choice', () => {
+    expect(validateSettings({}).photosensitive).toBe(true);
+    expect(validateSettings({ photosensitive: false }).photosensitive).toBe(false);
+    expect(validateSettings({ photosensitive: 'no' }).photosensitive).toBe(true);
+  });
   it('allows zero snoozes', () => {
     expect(validateSettings({ snoozeLimit: 0 }).snoozeLimit).toBe(0);
   });

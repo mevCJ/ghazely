@@ -1,4 +1,4 @@
-import { createEyeSfx, EYE_SFX_FILES } from './eye-sfx';
+import { createEyeFxPlayer, EYE_SFX_FILES, type EyeFxPlayer } from './eye-sfx';
 import { createEyeState } from './eye-state';
 import { createGazeJumpDetector } from './gaze-jump';
 import { createPhotoEye } from './photo-eye';
@@ -13,7 +13,21 @@ const eye = await createPhotoEye({
 });
 const state = createEyeState();
 const jump = createGazeJumpDetector();
-const sfx = createEyeSfx(EYE_SFX_FILES.map((f) => `/${f}`));
+// Chrome starts audio only after a click, so the player is built on the first one.
+const out = { ctx: undefined as AudioContext | undefined, gain: undefined as GainNode | undefined };
+let sfx: EyeFxPlayer | undefined;
+window.addEventListener(
+  'pointerdown',
+  () => {
+    if (out.ctx) return;
+    out.ctx = new AudioContext();
+    out.gain = out.ctx.createGain();
+    out.gain.gain.value = 0.22;
+    out.gain.connect(out.ctx.destination);
+    sfx = createEyeFxPlayer(out.ctx, out.gain, EYE_SFX_FILES.map((f) => `/${f}`));
+  },
+  { once: true },
+);
 const stage = $('stage');
 eye.canvas.style.cssText = `width:100%;aspect-ratio:${eye.canvas.width}/${eye.canvas.height};display:block`;
 stage.append(eye.canvas);
@@ -45,8 +59,8 @@ const frame = (t: number): void => {
     reducedMotion: false,
     veins: 0,
   });
-  sfx.setMuted(ui.mute.checked);
-  if (jump.push(f.gazeX, f.gazeY, t)) sfx.play();
+  if (out.gain) out.gain.gain.value = ui.mute.checked ? 0 : 0.22;
+  if (jump.push(f.gazeX, f.gazeY, t)) sfx?.play();
   const t0 = performance.now();
   eye.draw({
     openness: Number(ui.open.value) * f.openness,

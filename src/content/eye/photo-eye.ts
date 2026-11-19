@@ -12,21 +12,33 @@ const IRIS_MAX_LUM = 140;
 const MASK_EDGE = 24;
 /** Below this openness the closed photo replaces the whole image. */
 const CLOSED_BELOW = 0.5;
+/** Vignette: clear inside this share of the half-diagonal, then darkens to the edge. */
+const VIGNETTE_START = 0;
+const VIGNETTE_STRENGTH = 0.85;
+/** The palette shade, so the vignette matches the lock scrim. */
+const VIGNETTE_RGB = '26,26,26';
 
-const loadImage = (url: string): Promise<HTMLImageElement> =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`Could not load ${url}`));
-    img.src = url;
-  });
+/**
+ * Fetch, then decode from a blob. An image loaded straight from a chrome-extension:// URL counts
+ * as another origin on a web page and taints the canvas, which blocks reading its pixels.
+ */
+const loadImage = async (url: string): Promise<ImageBitmap> => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Could not load ${url}`);
+  return createImageBitmap(await res.blob());
+};
+
+export type PhotoEye = Eye & {
+  /** Where the iris rests, as a share of the canvas width and height. */
+  center: { x: number; y: number };
+};
 
 /** Turns the black-is-open mask into an alpha mask, and finds the opening's bounds. */
 const buildAlphaMask = (
-  mask: HTMLImageElement,
+  mask: ImageBitmap,
 ): { canvas: HTMLCanvasElement; cx: number; cy: number; a: number } => {
-  const w = mask.naturalWidth;
-  const h = mask.naturalHeight;
+  const w = mask.width;
+  const h = mask.height;
   const canvas = makeCanvas(w, h);
   const ctx = context(canvas);
   ctx.drawImage(mask, 0, 0);
@@ -59,9 +71,9 @@ const buildAlphaMask = (
  * Center and radius of the iris, from the dark pixels only. The image has a pale, uneven halo
  * around the iris that is opaque, so its alpha would pull the center off.
  */
-const measureIris = (img: HTMLImageElement): { x: number; y: number; r: number } => {
-  const w = img.naturalWidth;
-  const h = img.naturalHeight;
+const measureIris = (img: ImageBitmap): { x: number; y: number; r: number } => {
+  const w = img.width;
+  const h = img.height;
   const c = makeCanvas(w, h);
   const ctx = context(c);
   ctx.drawImage(img, 0, 0);
@@ -88,26 +100,36 @@ const measureIris = (img: HTMLImageElement): { x: number; y: number; r: number }
  * (face and bare sclera), the iris clipped to the opening, and a photo of the closed eye that
  * replaces the whole image when the eye shuts. It replaces a drawn lid, so a blink is a photo swap.
  */
-export const createPhotoEye = async (urls: PhotoEyeUrls): Promise<Eye> => {
+export const createPhotoEye = async (urls: PhotoEyeUrls): Promise<PhotoEye> => {
   const [base, closed, pupilImg, maskImg] = await Promise.all([
     loadImage(urls.base),
     loadImage(urls.closed),
     loadImage(urls.pupil),
     loadImage(urls.mask),
   ]);
-  const w = base.naturalWidth;
-  const h = base.naturalHeight;
+  const w = base.width;
+  const h = base.height;
   const canvas = makeCanvas(w, h);
   const ctx = context(canvas);
   const { canvas: alpha, cx, cy, a } = buildAlphaMask(maskImg);
   const iris = measureIris(pupilImg);
   const irisR = a * IRIS_R_OVER_A;
   const scale = irisR / iris.r;
+  // Drawn once. It sits over the open and the closed photo alike.
+  const vignette = makeCanvas(w, h);
+  const vctx = context(vignette);
+  const reach = Math.hypot(w, h) / 2;
+  const vg = vctx.createRadialGradient(w / 2, h / 2, reach * VIGNETTE_START, w / 2, h / 2, reach);
+  vg.addColorStop(0, `rgba(${VIGNETTE_RGB},0)`);
+  vg.addColorStop(1, `rgba(${VIGNETTE_RGB},${VIGNETTE_STRENGTH})`);
+  vctx.fillStyle = vg;
+  vctx.fillRect(0, 0, w, h);
   const layer = makeCanvas(w, h);
   const layerCtx = context(layer);
 
   return {
     canvas,
+    center: { x: cx / w, y: cy / h },
     draw: (p: EyeParams) => {
       const openness = clamp01(p.openness);
       const shine = clamp01(p.shine ?? 0.5);
@@ -124,8 +146,8 @@ export const createPhotoEye = async (urls: PhotoEyeUrls): Promise<Eye> => {
         pupilImg,
         ix - iris.x * scale,
         iy - iris.y * scale,
-        pupilImg.naturalWidth * scale,
-        pupilImg.naturalHeight * scale,
+        pupilImg.width * scale,
+        pupilImg.height * scale,
       );
       layerCtx.save();
       layerCtx.translate(ix - irisR * 0.36, iy - irisR * 0.36);
@@ -146,6 +168,7 @@ export const createPhotoEye = async (urls: PhotoEyeUrls): Promise<Eye> => {
       if (openness < CLOSED_BELOW) {
         ctx.drawImage(closed, 0, 0, w, h);
       }
+      ctx.drawImage(vignette, 0, 0);
     },
   };
 };

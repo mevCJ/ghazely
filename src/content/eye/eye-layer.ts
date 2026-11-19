@@ -1,11 +1,16 @@
+import type { EyeStyle } from '../../shared/settings';
 import type { EyeMode, Frame } from '../../shared/types';
 import { reducedMotion } from '../reduced-motion';
-import { createEye, EYE_H, EYE_W, type Eye } from './eye';
+import { createEye, type Eye } from './eye';
 import { createEyeState, type EyeState } from './eye-state';
+import { createGazeJumpDetector } from './gaze-jump';
+import { createPhotoEye } from './photo-eye';
 
 export type EyeLayer = {
   mount: (root: ShadowRoot) => void;
   update: (frame: Frame, dtMs: number) => void;
+  /** Swaps the eye. The photo eye loads in the background, and the old eye stays until it is ready. */
+  setStyle: (style: EyeStyle) => void;
   unmount: () => void;
 };
 
@@ -22,15 +27,33 @@ const OPACITY: Record<EyeMode, number> = { none: 0, peek: 0.7, watch: 0.7, full:
 const SCRIM: Record<EyeMode, number> = { none: 0, peek: 0, watch: 0, full: 1 };
 
 const FADE_MS = 1600;
+/** Bundled images, listed in web_accessible_resources. Never taken from the page. */
+const photoUrls = (): { base: string; closed: string; pupil: string; mask: string } => ({
+  base: chrome.runtime.getURL('eye/base.png'),
+  closed: chrome.runtime.getURL('eye/eye-closed.png'),
+  pupil: chrome.runtime.getURL('eye/pupil.png'),
+  mask: chrome.runtime.getURL('eye/mask.png'),
+});
+const CENTER = { x: 0.5, y: 0.5 };
 
 /** No cursor yet: the eye stares straight ahead. */
 const IDLE = { x: 0, y: 0 };
 
-export const createEyeLayer = (): EyeLayer => {
+/** `onGazeJump` runs when the eye whips across the screen. The caller decides what to do, such as a sound. */
+export const createEyeLayer = (initial: EyeStyle = 'photo', onGazeJump?: () => void): EyeLayer => {
+  const jump = createGazeJumpDetector();
+  let clockMs = 0;
   let eye: Eye | undefined;
   let state: EyeState | undefined;
   let canvas: HTMLCanvasElement | undefined;
   let scrim: HTMLDivElement | undefined;
+  let root: ShadowRoot | undefined;
+  /** The style asked for. It differs from `style` while the photo is still loading. */
+  let wanted: EyeStyle | undefined;
+  /** Where the iris rests in the canvas. The photo eye is not centered in its image. */
+  let center = CENTER;
+  /** Bumped on every style change, so a slow photo load cannot replace a newer choice. */
+  let token = 0;
   let mode: EyeMode = 'none';
   let lastShown = 0;
   let pointer: { x: number; y: number } | undefined;
@@ -42,14 +65,60 @@ export const createEyeLayer = (): EyeLayer => {
   const place = (m: EyeMode): void => {
     if (!canvas || !scrim) return;
     canvas.style.transition = `opacity ${FADE_MS}ms ease`;
-    canvas.style.transform = `translate(calc(${POS.x} - 50%), calc(${POS.y} - 50%))`;
+    canvas.style.transform = `translate(calc(${POS.x} - ${center.x * 100}%), calc(${POS.y} - ${center.y * 100}%))`;
     canvas.style.opacity = String(OPACITY[m]);
     scrim.style.opacity = String(SCRIM[m]);
   };
 
+  const install = (next: Eye, anchor: { x: number; y: number }, nextStyle: EyeStyle): void => {
+    if (!root || !scrim) return;
+    canvas?.remove();
+    eye = next;
+    center = anchor;
+    canvas = next.canvas;
+    canvas.className = 'eye';
+    canvas.setAttribute('aria-hidden', 'true');
+    const mask = 'radial-gradient(ellipse 50% 50% at 50% 50%, #000 76%, transparent 100%)';
+    // The width is capped by height too, so the eye never grows taller than the screen on tall windows.
+    // The photo is 3:2 and already dark at its edges, so it is sized to the screen height.
+    const width = nextStyle === 'photo' ? 'min(100vw, 150vh)' : 'min(116vw, 190vh)';
+    canvas.style.cssText = [
+      'position: fixed',
+      'left: 0',
+      'top: 0',
+      `width: ${width}`,
+      `aspect-ratio: ${canvas.width} / ${canvas.height}`,
+      'pointer-events: none',
+      'opacity: 0',
+      'will-change: transform, opacity',
+      `mask-image: ${mask}`,
+      `-webkit-mask-image: ${mask}`,
+    ].join(';');
+    // Right after the scrim, so it stays under the lock panel that mounts later.
+    scrim.after(canvas);
+    place(mode);
+  };
+  const drawn = (): void => install(createEye(), CENTER, 'drawn');
+  const setStyle = (next: EyeStyle): void => {
+    if (!root || next === wanted) return;
+    wanted = next;
+    const mine = ++token;
+    if (next === 'drawn') {
+      drawn();
+      return;
+    }
+    createPhotoEye(photoUrls())
+      .then((photo) => {
+        if (mine === token) install(photo, photo.center, 'photo');
+      })
+      .catch(() => {
+        // The images could not load. A drawn eye is better than none.
+        if (mine === token && !eye) drawn();
+      });
+  };
   return {
-    mount: (root) => {
-      eye = createEye();
+    mount: (shadow) => {
+      root = shadow;
       state = createEyeState();
       scrim = document.createElement('div');
       scrim.className = 'layer';
@@ -58,26 +127,9 @@ export const createEyeLayer = (): EyeLayer => {
         'opacity: 0',
         `transition: opacity ${FADE_MS}ms ease`,
       ].join(';');
-      canvas = eye.canvas;
-      canvas.className = 'eye';
-      canvas.setAttribute('aria-hidden', 'true');
-      // The width is capped by height too, so the eye never grows taller than the screen on tall windows.
-      const mask = 'radial-gradient(ellipse 50% 50% at 50% 50%, #000 76%, transparent 100%)';
-      canvas.style.cssText = [
-        'position: fixed',
-        'left: 0',
-        'top: 0',
-        'width: min(116vw, 190vh)',
-        `aspect-ratio: ${EYE_W} / ${EYE_H}`,
-        'pointer-events: none',
-        'opacity: 0',
-        'will-change: transform, opacity',
-        `mask-image: ${mask}`,
-        `-webkit-mask-image: ${mask}`,
-      ].join(';');
-      root.append(scrim, canvas);
-      place('none');
+      root.append(scrim);
       window.addEventListener('pointermove', onMove, { passive: true });
+      setStyle(initial);
     },
     update: (frame, dtMs) => {
       if (!eye || !state || !canvas) return;
@@ -94,8 +146,8 @@ export const createEyeLayer = (): EyeLayer => {
       if (pointer) {
         const r = canvas.getBoundingClientRect();
         target = {
-          x: (pointer.x - (r.left + r.width / 2)) / (window.innerWidth / 2),
-          y: (pointer.y - (r.top + r.height / 2)) / (window.innerHeight / 2),
+          x: (pointer.x - (r.left + r.width * center.x)) / (window.innerWidth / 2),
+          y: (pointer.y - (r.top + r.height * center.y)) / (window.innerHeight / 2),
         };
       }
       const f = state.step(dtMs, {
@@ -106,12 +158,18 @@ export const createEyeLayer = (): EyeLayer => {
         veins: frame.intensities.veins,
       });
       eye.draw(f);
+      clockMs += dtMs;
+      if (mode !== 'none' && jump.push(f.gazeX, f.gazeY, clockMs)) onGazeJump?.();
     },
+    setStyle,
     unmount: () => {
       window.removeEventListener('pointermove', onMove);
       canvas?.remove();
       scrim?.remove();
+      token++;
       canvas = scrim = undefined;
+      root = wanted = undefined;
+      center = CENTER;
       eye = undefined;
       state = undefined;
     },

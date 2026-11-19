@@ -1,5 +1,8 @@
 import { DEFAULT_SKIP_LIST } from './scare-script';
 
+export type EyeStyle = 'photo' | 'drawn';
+export const EYE_STYLES: readonly EyeStyle[] = ['photo', 'drawn'];
+
 export type Settings = {
   restSeconds: number;
   snoozeLimit: number;
@@ -8,6 +11,9 @@ export type Settings = {
   sound: boolean;
   mediaDistortion: boolean;
   redImages: boolean;
+  eyeStyle: EyeStyle;
+  /** For photosensitive epilepsy: no flicker or flashing, only slow fades. */
+  photosensitive: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -18,6 +24,8 @@ export const DEFAULT_SETTINGS: Settings = {
   sound: true,
   mediaDistortion: false,
   redImages: true,
+  eyeStyle: 'photo',
+  photosensitive: true,
 };
 
 /** Chrome's idle API refuses anything under 15 seconds. */
@@ -31,6 +39,8 @@ const int = (v: unknown, min: number, max: number, fallback: number): number =>
     ? Math.min(max, Math.max(min, Math.round(v)))
     : fallback;
 
+const eyeStyle = (v: unknown, fallback: EyeStyle): EyeStyle =>
+  EYE_STYLES.find((style) => style === v) ?? fallback;
 const flag = (v: unknown, fallback: boolean): boolean => (typeof v === 'boolean' ? v : fallback);
 
 export const cleanPattern = (raw: string): string | undefined => {
@@ -60,6 +70,8 @@ export const validateSettings = (raw: unknown): Settings => {
     sound: flag(r['sound'], d.sound),
     mediaDistortion: flag(r['mediaDistortion'], d.mediaDistortion),
     redImages: flag(r['redImages'], d.redImages),
+    eyeStyle: eyeStyle(r['eyeStyle'], d.eyeStyle),
+    photosensitive: flag(r['photosensitive'], d.photosensitive),
   };
 };
 

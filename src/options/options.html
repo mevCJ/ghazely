@@ -1,49 +1,219 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ghazely settings</title>
   <link rel="stylesheet" href="../shared/ui.css" />
-  <style>main { max-width: 560px; margin: 0 auto; padding: 24px 16px 48px; } ul { list-style: none; padding: 0; margin: 8px 0; } li { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #2a2a2a; padding: 2px 0; } #status { min-height: 1.4em; color: #8a8a8a; }</style>
+  <style>
+    main {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr);
+      gap: 56px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 48px;
+    }
+
+    .settings {
+      padding-inline: 20px;
+    }
+
+    .settings>h2:first-child {
+      margin-top: 0;
+    }
+
+    .intro {
+      position: sticky;
+      top: 32px;
+      align-self: start;
+    }
+
+    @media (max-width: 800px) {
+      main {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+      }
+
+      .intro {
+        position: static;
+      }
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #2a2a2a;
+      padding: 2px 0;
+    }
+
+    img.eye {
+      display: block;
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+      margin: 16px 0 0;
+      margin-left: -55px;
+      image-rendering: pixelated;
+      mix-blend-mode: lighten;
+      -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 55%, transparent 100%);
+      mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 55%, transparent 100%);
+    }
+
+    #status {
+      min-height: 1.4em;
+      color: #8a8a8a;
+    }
+
+    fieldset.eyes {
+      display: flex;
+      gap: 12px;
+      border: 0;
+      padding: 0;
+      margin: 8px 0 16px;
+      min-width: 0;
+      max-width: 520px;
+    }
+
+    fieldset.eyes legend {
+      padding: 0;
+      margin-bottom: 6px;
+    }
+
+    .eye-option {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin: 0;
+      padding: 8px;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .eye-option:has(input:checked) {
+      border-color: #b02a2a;
+      background: #1f1515;
+    }
+
+    .eye-option:has(input:focus-visible) {
+      outline: 2px solid #b02a2a;
+      outline-offset: 2px;
+    }
+
+    .eye-option input {
+      align-self: flex-start;
+      margin: 0;
+      accent-color: #b02a2a;
+    }
+
+    .preview {
+      display: block;
+      aspect-ratio: 3 / 2;
+      background: #111;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .preview canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+   .field-head { position: relative; display: flex; align-items: center; gap: 6px; margin: 10px 0 2px; } .field-head label { margin: 0; } .tip { display: inline-flex; } .tip-btn { width: 16px; height: 16px; padding: 0; border: 1px solid #8a8a8a; border-radius: 50%; background: transparent; color: #8a8a8a; font-size: 11px; line-height: 1; cursor: help; } .tip-btn:hover, .tip-btn:focus-visible { color: #e8e2d8; border-color: #e8e2d8; background: transparent; } .tip [role="tooltip"] { position: absolute; left: 0; top: calc(100% + 2px); width: 260px; max-width: 100%; padding: 8px 10px; background: #111; border: 1px solid #7a1f1f; border-radius: 4px; color: #e8e2d8; font-size: 12px; line-height: 1.4; visibility: hidden; opacity: 0; transition: opacity 0.12s; z-index: 10; } .tip [role="tooltip"]::before { content: ''; position: absolute; left: 0; right: 0; top: -8px; height: 8px; } .tip:hover [role="tooltip"], .tip:focus-within [role="tooltip"] { visibility: visible; opacity: 1; } .tip.dismissed [role="tooltip"] { visibility: hidden; opacity: 0; }</style>
 </head>
+
 <body>
   <main>
-    <h1>Ghazely</h1>
-    <p>It rots the page while you stare. A real rest heals it. Settings are saved as you change them.</p>
-    <p id="status" role="status" aria-live="polite"></p>
+    <header class="intro">
+      <img class="eye" src="/eye/dither-eye.png" width="400" height="267" alt="" />
+      <h1>Ghazely</h1>
+      <p>It rots the page while you stare. A real rest heals it. Settings are saved as you change them.</p>
+      <p id="status" role="status" aria-live="polite"></p>
+    </header>
+    <div class="settings">
+      <h2>Rest and snooze</h2>
+      <div class="field-head">
+        <label for="restSeconds">Rest length (seconds, at least 15)</label>
+        <span class="tip">
+          <button type="button" class="tip-btn" aria-label="About rest length">?</button>
+          <span role="tooltip" id="tip-rest">How long you must go with no typing, mouse or touch input and no playing media before the page heals. Ghazely cannot count a rest shorter than 15 seconds.</span>
+        </span>
+      </div>
+      <input id="restSeconds" aria-describedby="tip-rest" type="number" min="15" max="14400" step="1" />
+      <div class="field-head">
+        <label for="snoozeLimit">Snoozes per day</label>
+        <span class="tip">
+          <button type="button" class="tip-btn" aria-label="About snoozes per day">?</button>
+          <span role="tooltip" id="tip-limit">How many times a day you can snooze the lock screen. Each snooze brings the next haunt back sooner and stronger. The count resets at local midnight. Set 0 to turn snoozing off.</span>
+        </span>
+      </div>
+      <input id="snoozeLimit" aria-describedby="tip-limit" type="number" min="0" max="10" step="1" />
+      <div class="field-head">
+        <label for="snoozeMinutes">Snooze length (minutes)</label>
+        <span class="tip">
+          <button type="button" class="tip-btn" aria-label="About snooze length">?</button>
+          <span role="tooltip" id="tip-minutes">How many minutes one snooze holds the haunt off before it comes back.</span>
+        </span>
+      </div>
+      <input id="snoozeMinutes" aria-describedby="tip-minutes" type="number" min="1" max="60" step="1" />
 
-    <h2>Rest and snooze</h2>
-    <label for="restSeconds">Rest length (seconds, at least 15)</label>
-    <input id="restSeconds" type="number" min="15" max="14400" step="1" />
-    <label for="snoozeLimit">Snoozes per day</label>
-    <input id="snoozeLimit" type="number" min="0" max="10" step="1" />
-    <label for="snoozeMinutes">Snooze length (minutes)</label>
-    <input id="snoozeMinutes" type="number" min="1" max="60" step="1" />
+      <h2>Effects</h2>
+      <fieldset class="eyes">
+        <legend>Eye</legend>
+        <label class="eye-option">
+          <input type="radio" name="eyeStyle" value="photo" />
+          <span class="preview" id="preview-photo"></span>
+          <span>Photo eye</span>
+        </label>
+        <label class="eye-option">
+          <input type="radio" name="eyeStyle" value="drawn" />
+          <span class="preview" id="preview-drawn"></span>
+          <span>Drawn eye</span>
+        </label>
+      </fieldset>
+      <div class="check"><input id="photosensitive" type="checkbox" /><label for="photosensitive"
+          style="margin:0">Photosensitive epilepsy: turn off flickering</label></div>
+      <p class="hint" style="margin:0 0 8px 26px">Pages fade slowly in and out instead of flickering. Changes reach an
+        open page right away.</p>
+      <div class="check"><input id="sound" type="checkbox" /><label for="sound" style="margin:0">Sound (heartbeat,
+          ringing, whispers)</label></div>
+      <div class="check"><input id="redImages" type="checkbox" /><label for="redImages" style="margin:0">Turn images red
+          as time passes</label></div>
+      <div class="check"><input id="mediaDistortion" type="checkbox" /><label for="mediaDistortion"
+          style="margin:0">Distort video and audio on the page</label></div>
 
-    <h2>Effects</h2>
-    <div class="check"><input id="sound" type="checkbox" /><label for="sound" style="margin:0">Sound (heartbeat, ringing, whispers)</label></div>
-    <div class="check"><input id="redImages" type="checkbox" /><label for="redImages" style="margin:0">Turn images red as time passes</label></div>
-    <div class="check"><input id="mediaDistortion" type="checkbox" /><label for="mediaDistortion" style="margin:0">Distort video and audio on the page</label></div>
+      <h2>Skip list</h2>
+      <p class="hint">Ghazely never runs on these hosts. Use * as a wildcard, for example <code>*.bank*</code>. Changes
+        reach an open page after it reloads.</p>
+      <ul id="skipList" aria-label="Skipped hosts"></ul>
+      <form id="addForm" class="row">
+        <label for="newHost" class="sr">Host to skip</label>
+        <input id="newHost" type="text" placeholder="example.com" autocomplete="off" spellcheck="false" />
+        <button type="submit">Add</button>
+        <button type="button" id="restore" class="link">Restore defaults</button>
+      </form>
 
-    <h2>Skip list</h2>
-    <p class="hint">Ghazely never runs on these hosts. Use * as a wildcard, for example <code>*.bank*</code>. Changes reach an open page after it reloads.</p>
-    <ul id="skipList" aria-label="Skipped hosts"></ul>
-    <form id="addForm" class="row">
-      <label for="newHost" class="sr">Host to skip</label>
-      <input id="newHost" type="text" placeholder="example.com" autocomplete="off" spellcheck="false" />
-      <button type="submit">Add</button>
-      <button type="button" id="restore" class="link">Restore defaults</button>
-    </form>
-
-    <h2>About</h2>
-    <p><span id="version" tabindex="0" role="button">Version</span></p>
-    <section id="demoBox" hidden>
-      <label for="speed">Clock speed: <output id="speedOut">1</output>x</label>
-      <input id="speed" type="range" min="1" max="240" step="1" value="1" />
-      <p class="hint">Hidden demo control. 1x is normal.</p>
-    </section>
+      <h2>About</h2>
+      <p><span id="version" tabindex="0" role="button">Version</span></p>
+      <section id="demoBox" hidden>
+        <label for="speed">Clock speed: <output id="speedOut">1</output>x</label>
+        <input id="speed" type="range" min="1" max="240" step="1" value="1" />
+        <p class="hint">Hidden demo control. 1x is normal.</p>
+      </section>
+    </div>
   </main>
   <script type="module" src="./options.ts"></script>
 </body>
+
 </html>
