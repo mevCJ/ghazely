@@ -14,6 +14,8 @@ export const eyelidsEffect = (): Effect => {
   let top: HTMLDivElement | undefined;
   let bottom: HTMLDivElement | undefined;
   let clock = 0;
+  /** Where a lid rests when it covers nothing: fully off its own edge of the screen. */
+  const hidden = (edge: 'top' | 'bottom'): string => (edge === 'top' ? 'translateY(-101%)' : 'translateY(101%)');
   const lid = (edge: 'top' | 'bottom'): HTMLDivElement => {
     const el = document.createElement('div');
     el.className = 'layer';
@@ -22,7 +24,7 @@ export const eyelidsEffect = (): Effect => {
       `${edge === 'top' ? 'bottom' : 'top'}: 50%`,
       `background: linear-gradient(${dir}, ${PALETTE.shade} 0%, ${PALETTE.shade} 82%, transparent 100%)`,
       'will-change: transform',
-      'transform: translateY(-101%)',
+      `transform: ${hidden(edge)}`,
     ].join(';');
     return el;
   };
