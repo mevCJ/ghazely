@@ -64,7 +64,7 @@ Open them from the popup or from the lock panel. They are saved as you type.
 
 | Permission | Why |
 |---|---|
-| `storage` | Keeps the clock (`chrome.storage.local`) and your settings (`chrome.storage.sync`). |
+| `storage` | Keeps the clock (`chrome.storage.local`), your settings (`chrome.storage.sync`), and the time of your last input (`chrome.storage.session`, in memory, cleared when the browser closes). |
 | `idle` | Detects that you have stopped using the computer, which is how a rest is found. |
 | `alarms` | Wakes the background worker for the midnight snooze reset, the pause timer, the demo end, and a re-check while a tab is playing sound. |
 | `tabs` | Used for one thing: asking whether any tab is playing sound. A rest does not count while one is. Ghazely never reads tab URLs or titles. |
@@ -77,6 +77,7 @@ Open them from the popup or from the lock panel. They are saved as you type.
 - What is stored: the clock (elapsed time, speed, status, today's snooze count) and your settings. The skip list holds host patterns you typed or the defaults.
 - The page's host name is compared with the skip list on your device and is not saved.
 - While the lock panel is up, the page notes only the time of the last input, to run the rest countdown. It does not record what the input was.
+- Every page also saves the time of the last input (at most once every 3 seconds) to session storage, for the rest bar in the popup. It is one number. It is not written to disk and it goes when the browser closes. Pages on the skip list save nothing.
 - There are no network calls and no remote code. The heartbeat and ring are generated in the browser. Whispers play a clip bundled with the extension (`public/sfx/whisper.mp3`), with a generated whisper as a fallback. Nothing is taken from the page.
 - Distorting page `<video>` and `<audio>` is off by default. It changes the playback speed and a CSS filter on the element. It does not capture audio.
 

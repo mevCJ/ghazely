@@ -11,6 +11,7 @@ import { veinsEffect } from './effects/veins';
 import { createEyeLayer } from './eye/eye-layer';
 import { createLockPanel, type LockSettings } from './lock-panel';
 import { mediaDistortEffect } from './media-distort';
+import { trackInput } from './input-tracker';
 import { createOverlay } from './overlay-host';
 import { setPhotosensitive } from './reduced-motion';
 
@@ -34,6 +35,7 @@ const mount = (settings: Settings): void => {
     settings: lockSettings(settings),
     send: (m) => void chrome.runtime.sendMessage(m).catch(() => undefined),
   });
+  const stopInput = trackInput();
   const stopController = startController({
     overlay,
     effects: [blurEffect(), tunnelEffect(), veinsEffect(), floatersEffect(), eyelidsEffect(), red, media],
@@ -51,6 +53,7 @@ const mount = (settings: Settings): void => {
   };
   applyOptions(settings);
   teardown = () => {
+    stopInput();
     stopController();
     overlay.destroy();
     teardown = undefined;

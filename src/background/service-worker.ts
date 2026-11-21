@@ -10,6 +10,7 @@ import {
 import { demoRemainingMs, startDemo, stopDemo } from '../shared/demo';
 import { PAUSE_RANGE, SPEED_RANGE, type WorkerMessage, type WorkerReply } from '../shared/messages';
 import { DEFAULT_SETTINGS, getSettings, subscribeSettings } from '../shared/settings';
+import { openToContentScripts } from '../shared/last-input';
 import { getClock, setClock } from '../shared/storage';
 import type { ClockState } from '../shared/types';
 import { chromePlatform } from './chrome-platform';
@@ -107,6 +108,9 @@ const handlers: Record<WorkerMessage['type'], (m: WorkerMessage) => Promise<void
   },
 };
 
+// Pages save the time of their last input to session storage. This opens it to them, and runs
+// on every worker start because the setting does not outlive the worker.
+void openToContentScripts().catch(() => undefined);
 // Listeners must be registered at the top level, so the detector starts with defaults
 // and the stored rest length is applied as soon as it loads.
 const applyRestLength = (seconds: number): void => detector.setRestSeconds(seconds);
