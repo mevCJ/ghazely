@@ -35,3 +35,29 @@ export const demoRemainingMs = (state: ClockState, now: number): number => {
   const leftScaled = DEMO_END_MIN * 60_000 - elapsedMs(state, now);
   return leftScaled <= 0 ? 0 : leftScaled / Math.max(1, state.speed);
 };
+
+/** Real milliseconds a demo snooze shows the calm page before the lock returns. */
+export const DEMO_SNOOZE_CALM_MS = 5_000;
+
+/**
+ * Demo-only snooze: spend a snooze and show a calm page (clock paused at zero).
+ * Real snoozes keep the spec'd tunnel look; a recording needs the contrast instead.
+ */
+export const demoSnooze = (state: ClockState, now: number, limit: number): ClockState =>
+  state.snoozes.count >= limit
+    ? state
+    : {
+        ...state,
+        baseMs: 0,
+        baseTime: now,
+        status: 'paused',
+        snoozes: { ...state.snoozes, count: state.snoozes.count + 1 },
+      };
+
+/** After the calm beat the haunt comes straight back at the lock, still at demo speed. */
+export const demoRelock = (state: ClockState, now: number): ClockState => ({
+  ...state,
+  baseMs: LOCK_START_MIN * 60_000,
+  baseTime: now,
+  status: 'active',
+});

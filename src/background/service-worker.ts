@@ -7,7 +7,14 @@ import {
   startRest,
   withSpeed,
 } from '../shared/engine';
-import { demoRemainingMs, startDemo, stopDemo } from '../shared/demo';
+import {
+  DEMO_SNOOZE_CALM_MS,
+  demoRelock,
+  demoRemainingMs,
+  demoSnooze,
+  startDemo,
+  stopDemo,
+} from '../shared/demo';
 import { PAUSE_RANGE, SPEED_RANGE, type WorkerMessage, type WorkerReply } from '../shared/messages';
 import { DEFAULT_SETTINGS, getSettings, subscribeSettings } from '../shared/settings';
 import { openToContentScripts } from '../shared/last-input';
@@ -68,6 +75,16 @@ const armDemoEnd = async (): Promise<void> => {
 const handlers: Record<WorkerMessage['type'], (m: WorkerMessage) => Promise<void>> = {
   snooze: async () => {
     const cfg = await getSettings();
+    const before = await getClock();
+    if (before && before.speed > 1) {
+      // Demo mode: a short calm beat, then the lock comes straight back. A timer is fine
+      // here: the worker is awake for the whole recording, and 5 s is under the alarm minimum.
+      await update((s, now) => demoSnooze(s, now, cfg.snoozeLimit));
+      setTimeout(() => {
+        void update((s, now) => (s.speed > 1 && s.status === 'paused' ? demoRelock(s, now) : s)).then(armDemoEnd);
+      }, DEMO_SNOOZE_CALM_MS);
+      return;
+    }
     await update((s, now) =>
       applySnooze(s, { snoozeMin: cfg.snoozeMinutes, limit: cfg.snoozeLimit, now }),
     );

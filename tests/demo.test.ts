@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   DEMO_END_MIN,
   DEMO_SPEED,
+  DEMO_SNOOZE_CALM_MS,
+  demoRelock,
   demoRemainingMs,
+  demoSnooze,
   startDemo,
   stopDemo,
 } from '../src/shared/demo';
@@ -82,5 +85,28 @@ describe('snooze delay', () => {
     expect(snoozeView(0, 3, 6000, 5000)).toBe('available');
     expect(snoozeView(0, 3, 6000)).toBe('wait');
     expect(snoozeView(3, 3, 99_000, 5000)).toBe('none');
+  });
+});
+
+describe('demo snooze', () => {
+  const locked: ClockState = { ...startDemo(base, 0), baseMs: 125 * 60_000, snoozes: { day: '2026-01-01', count: 0 } };
+
+  it('spends a snooze and shows calm', () => {
+    const s = demoSnooze(locked, 5000, 3);
+    expect(s).toMatchObject({ baseMs: 0, status: 'paused', speed: 120 });
+    expect(s.snoozes.count).toBe(1);
+    expect(stageAt(elapsedMs(s, 9000) / 60_000).id).toBe('calm');
+  });
+
+  it('does nothing when no snoozes are left', () => {
+    const spent = { ...locked, snoozes: { day: '2026-01-01', count: 3 } };
+    expect(demoSnooze(spent, 5000, 3)).toBe(spent);
+  });
+
+  it('brings the lock straight back and the demo ends 20 s later', () => {
+    const r = demoRelock(demoSnooze(locked, 0, 3), DEMO_SNOOZE_CALM_MS);
+    expect(r.status).toBe('active');
+    expect(stageAt(elapsedMs(r, DEMO_SNOOZE_CALM_MS) / 60_000).id).toBe('lock');
+    expect(demoRemainingMs(r, DEMO_SNOOZE_CALM_MS)).toBeCloseTo(20_000);
   });
 });

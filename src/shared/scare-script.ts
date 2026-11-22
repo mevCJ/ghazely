@@ -14,7 +14,7 @@ export const STAGES: readonly Stage[] = [
   },
   {
     id: 'strain',
-    startMin: 20,
+    startMin: 21,
     levels: { blur: 0, veins: 0, eyelids: 0, floaters: 0, tunnel: 0, tint: 0 },
     heartbeat: false,
     whisper: 'off',
