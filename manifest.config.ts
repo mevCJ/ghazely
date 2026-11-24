@@ -3,7 +3,7 @@ import { defineManifest } from '@crxjs/vite-plugin';
 export default defineManifest({
   manifest_version: 3,
   name: 'Ghazely',
-  version: '0.1.0',
+  version: '0.1.1',
   description: 'The longer you stare, the worse the page looks. A real rest heals it.',
   icons: {
     '16': 'public/icons/icon-16.png',
@@ -51,5 +51,5 @@ export default defineManifest({
     },
   ],
   // Each one is explained in the README.
-  permissions: ['storage', 'idle', 'alarms', 'tabs'],
+  permissions: ['storage', 'idle', 'alarms'],
 });

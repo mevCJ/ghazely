@@ -67,7 +67,6 @@ Open them from the popup or from the lock panel. They are saved as you type.
 | `storage` | Keeps the clock (`chrome.storage.local`), your settings (`chrome.storage.sync`), and the time of your last input (`chrome.storage.session`, in memory, cleared when the browser closes). |
 | `idle` | Detects that you have stopped using the computer, which is how a rest is found. |
 | `alarms` | Wakes the background worker for the midnight snooze reset, the pause timer, the demo end, and a re-check while a tab is playing sound. |
-| `tabs` | Used for one thing: asking whether any tab is playing sound. A rest does not count while one is. Ghazely never reads tab URLs or titles. |
 | `web_accessible_resources` (not a permission) | Lets the content script load the bundled sound clips in `sfx/` (the whisper and the eye clips) and the photo eye layers in `eye/`. It uses a per-session address, so a page cannot probe for the extension by requesting the file. |
 | Content script on all sites | Draws the overlay on every page. It runs in the page only to draw, and skips hosts on the skip list. |
 

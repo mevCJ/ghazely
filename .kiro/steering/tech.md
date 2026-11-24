@@ -29,7 +29,7 @@ inclusion: always
 
 ## Permissions (keep minimal)
 
-`storage`, `idle`, `alarms`, `tabs` (only for the audible check), host access `<all_urls>` through content scripts. Explain each in the README.
+`storage`, `idle`, `alarms`, host access `<all_urls>` through content scripts. Explain each in the README.
 
 ## Testing and checks
 
