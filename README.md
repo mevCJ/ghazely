@@ -121,3 +121,7 @@ tests/           unit tests, named after the source files
 - Blinking and cursor-following were checked by unit tests, not watched in motion.
 - Demo mode does not reset today's snooze count, so earlier snoozes make the demo harsher.
 - The eye's glint and the skin around it are the weakest parts of the drawing.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
